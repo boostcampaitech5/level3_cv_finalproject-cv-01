@@ -2,7 +2,7 @@ import socket
 import time
 import json
 IP = ''
-PORT = 2278
+PORT = 30012
 ADDR = (IP,PORT)
 sample_result = {'class': 'tacco',
                  'recipe': ['vegitable', 'meet','sc']}
@@ -16,10 +16,22 @@ def connect(ADDR):
         print('listen')
         while True:
             client_sock, client_addr = server.accept()
-            msg = client_sock.recv(1024)
-            print(msg,client_addr)
-            time.sleep(0.5)
-            client_sock.sendall(sample_result.encode())
+            
+            msg = client_sock.recv(16).decode()
+            print('total_len',int(msg[4:]))
+            total_len = int(msg[4:])
+            while total_len >0:
+                msg = client_sock.recv(1024)
+                total_len -= len(msg)
+
+            print('send_result')    
+            client_sock.sendall(len_packet(sample_result)+sample_result.encode())
             client_sock.close()
+            
+
+def len_packet(data):
+    len_data = f'len:{len(data):<12}'.encode()
+    return len_data
+
 
 connect(ADDR)
