@@ -2,8 +2,6 @@ import torch
 import wandb
 import albumentations as A
 
-from albumentations.pytorch.transforms import ToTensorV2
-
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -37,7 +35,6 @@ def main(args):
         [
             A.Resize(args.resize, args.resize),
             A.Normalize(),
-            ToTensorV2(transpose_mask=True),
         ]
     )
     train_dataset = CustomDataset(
