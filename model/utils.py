@@ -21,14 +21,15 @@ def parse_args():
     parser.add_argument(
         "--model_name",
         type=str,
-        default="resnet18",
+        default="ResNet18",
     )
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--num_workers", type=int, default=8)
+    parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--batch", type=int, default=64)
+    parser.add_argument("--resize", type=int, default=128)
     parser.add_argument("--accumulation_steps", type=int, default=4)
-    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--lr", type=float, default=1e-2)
     parser.add_argument("--weight_decay", type=float, default=1e-3)
 
     args = parser.parse_args()

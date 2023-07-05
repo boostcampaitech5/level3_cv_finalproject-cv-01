@@ -15,20 +15,21 @@ def validation(model, criterion, valid_loader):
     model.eval()
     with torch.no_grad():
         total_loss, scores = [], []
+        model.cuda()
         for images, labels in tqdm(valid_loader, total=len(valid_loader)):
             images, labels = (
-                torch.from_numpy(images).cuda(),
-                torch.from_numpy(labels).cuda(),
+                torch.tensor(images).cuda(),
+                torch.tensor(labels).cuda(),
             )
-            model.cuda()
 
             outputs = model(images)
-            outputs = F.softmax(outputs, dim=1)
             labels = labels.long()
             loss = criterion(outputs, labels)
 
+            outputs = F.softmax(outputs, dim=1)
             outputs = torch.argmax(outputs, dim=1)
             score = f1_score(y_true=labels.cpu(), y_pred=outputs.cpu(), average="macro")
+
             total_loss.append(loss)
             scores.append(score)
         mean_loss = torch.mean(torch.stack(total_loss))
@@ -40,58 +41,49 @@ def train(model, optimizer, criterion, scheduler, train_loader, valid_loader, ar
     print("Start Train...")
 
     scaler = torch.cuda.amp.GradScaler(enabled=True)
-    cur_time = datetime.datetime.now()
     best_score = 0
+    model.cuda()
     for epoch in range(args.epochs):
+        cur_time = datetime.datetime.now()
         model.train()
-        optimizer.zero_grad()
-        for step, (images, labels) in enumerate(train_loader):
+        for images, labels in train_loader:
             images, labels = (
-                torch.from_numpy(images).cuda(),
-                torch.from_numpy(labels).cuda(),
+                torch.tensor(images).cuda(),
+                torch.tensor(labels).cuda(),
             )
-            model.cuda()
+            optimizer.zero_grad()
 
             with torch.cuda.amp.autocast(enabled=True):
                 outputs = model(images)
-                outputs = F.softmax(outputs, dim=1)
+                # outputs = F.softmax(outputs, dim=1)
                 labels = labels.long()
                 loss = criterion(outputs, labels)
 
             scaler.scale(loss).backward()
-            if not (step + 1) % args.accumulation_steps:
-                scaler.step(optimizer)
-                scaler.update()
-                optimizer.zero_grad()
-
-            # wandb.log({"train/LR": args.lr, "train/loss": loss})
-        if args.accumulation_steps > 1 and (step + 1) % args.accumulation_steps:
             scaler.step(optimizer)
             scaler.update()
-            optimizer.zero_grad()
+
+            current_lr = optimizer.param_groups[0]["lr"]
+            wandb.log({"train/LR": current_lr, "train/loss": loss})
 
         print(
             f"Duration :{datetime.datetime.now() - cur_time} |"
             f"Epoch [{epoch+1}/{args.epochs}], "
             f"Loss: {round(loss.item(),4)}"
         )
-        cur_time = datetime.datetime.now()
 
-        # wandb.log({"train/Epoch": epoch + 1})
+        wandb.log({"train/Epoch": epoch + 1})
         scheduler.step()
 
-        if not (epoch + 1) % 10:
-            loss, score = validation(model, criterion, valid_loader)
+        loss, score = validation(model, criterion, valid_loader)
 
-            print(f"Validation Marco-F1 Score : {score}")
-            # wandb.log({"val/Loss": loss, "val/Score": score})
+        print(f"Validation Marco-F1 Score : {score}")
+        wandb.log({"val/Loss": loss, "val/Score": score})
 
-            if score > best_score:
-                best_score = score
-                output_path = os.path.join(
-                    args.save_path, f"{args.model_name}_best.pth"
-                )
-                torch.save(model, output_path)
-            output_path = os.path.join(args.save_path, f"{args.model_name}_latest.pth")
+        if score > best_score:
+            best_score = score
+            output_path = os.path.join(args.save_path, f"{args.model_name}_best.pth")
             torch.save(model, output_path)
+        output_path = os.path.join(args.save_path, f"{args.model_name}_latest.pth")
+        torch.save(model, output_path)
     print("Finish Train!!!")

@@ -6,6 +6,7 @@ import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR
+from importlib import import_module
 
 from dataset import *
 from models import *
@@ -22,16 +23,17 @@ def main(args):
         num_workers
         epochs
         batch
+        resize
         lr
         weight_decay
     """
     torch.cuda.empty_cache()
     set_seed(args.seed)
-    # wandb.init(project="final_project", name=f"cls_{args.model_name}")
+    wandb.init(project="final_project", name=f"cls_{args.model_name}")
 
     tf = A.Compose(
         [
-            A.Resize(512, 512),
+            A.Resize(args.resize, args.resize),
             A.Normalize(
                 mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
             ),  # Image net참고, 0을 기준으로 1의 표준편차
@@ -62,15 +64,16 @@ def main(args):
         drop_last=False,
     )
 
-    model = ResNet18(num_classes=93)
+    model_module = getattr(import_module("models"), args.model_name)
+    model = model_module(num_classes=93)
+
     criterion = nn.CrossEntropyLoss()
-    # criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.AdamW(
         params=model.parameters(), lr=args.lr, weight_decay=args.weight_decay
     )
-    scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-4)
+    scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-3)
     train(model, optimizer, criterion, scheduler, train_loader, valid_loader, args)
-    # wandb.finish()
+    wandb.finish()
 
 
 if __name__ == "__main__":
