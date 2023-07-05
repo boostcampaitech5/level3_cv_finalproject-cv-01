@@ -2,6 +2,8 @@ import torch
 import wandb
 import albumentations as A
 
+from albumentations.pytorch.transforms import ToTensorV2
+
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -34,9 +36,8 @@ def main(args):
     tf = A.Compose(
         [
             A.Resize(args.resize, args.resize),
-            A.Normalize(
-                mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
-            ),  # Image net참고, 0을 기준으로 1의 표준편차
+            A.Normalize(),
+            ToTensorV2(transpose_mask=True),
         ]
     )
     train_dataset = CustomDataset(

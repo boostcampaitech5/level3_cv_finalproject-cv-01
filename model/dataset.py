@@ -31,14 +31,12 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
         image_path = self.images_path[index]
         label = self.labels[index]
-
         image = cv2.imread(image_path)
-        image = image / 255.0
 
         if self.tf is not None:
             inputs = {"image": image}
             result = self.tf(**inputs)
 
             image = result["image"]
-        image = image.transpose(2, 0, 1)
+        image.permute(2, 0, 1)
         return image, self.cls2idx[label]

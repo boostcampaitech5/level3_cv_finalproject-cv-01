@@ -17,10 +17,8 @@ def validation(model, criterion, valid_loader):
         total_loss, scores = [], []
         model.cuda()
         for images, labels in tqdm(valid_loader, total=len(valid_loader)):
-            images, labels = (
-                torch.tensor(images).cuda(),
-                torch.tensor(labels).cuda(),
-            )
+            images = images.cuda()
+            labels = torch.tensor(labels).cuda()
 
             outputs = model(images)
             labels = labels.long()
