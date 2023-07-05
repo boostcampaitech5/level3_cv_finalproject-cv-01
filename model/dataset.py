@@ -38,5 +38,4 @@ class CustomDataset(Dataset):
             result = self.tf(**inputs)
 
             image = result["image"]
-        image.permute(2, 0, 1)
         return image, self.cls2idx[label]
