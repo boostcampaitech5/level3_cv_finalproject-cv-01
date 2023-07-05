@@ -37,6 +37,9 @@ def img_encode_func(img_data):
     # print(retval,type(encode_data))
     return encode_data
 
+def com_packet(cmd):
+    return f'com {cmd:<12}'.encode()
+
 def connect_with_server(data,data_encode_func=img_encode_func):
     client = get_client_socket()
     client.settimeout(10)
@@ -44,7 +47,7 @@ def connect_with_server(data,data_encode_func=img_encode_func):
     if data_encode_func:
         data = data_encode_func(data)
 
-    data = len_packet(data)+data
+    data = len_packet(data)+com_packet('image')+data
 
     # data = data
 
@@ -53,6 +56,7 @@ def connect_with_server(data,data_encode_func=img_encode_func):
 
     ## length packet이 있을 경우
     total_len = int(client.recv(16).decode()[4:])
+    client.recv(16)
     print('total_len:',total_len)
     while total_len>0:
         msg = client.recv(1024)
@@ -83,3 +87,4 @@ def connect_with_server(data,data_encode_func=img_encode_func):
 # connect(ADDR)
 if __name__ == '__main__':
     connect_with_server(cv2.imread('./sample_img.jpg',cv2.IMREAD_COLOR),img_encode_func)
+
