@@ -3,11 +3,11 @@ import json
 import cv2 
 import numpy as np
 # IP = '127.0.0.1'
-IP = '118.67.132.167'
-PORT = 30012
+# IP = '118.67.132.167'
+# PORT = 30012
 # IP = '101.101.208.43'
 # PORT = 30010
-ADDR = (IP,PORT)
+# ADDR = (IP,PORT)
 def connect(ADDR):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
         total_msg = ""
@@ -40,7 +40,7 @@ def img_encode_func(img_data):
 def com_packet(cmd):
     return f'com {cmd:<12}'.encode()
 
-def connect_with_server(data,data_encode_func=img_encode_func):
+def connect_with_server(ADDR, data,data_encode_func=img_encode_func):
     client = get_client_socket()
     client.settimeout(10)
     client.connect(ADDR)

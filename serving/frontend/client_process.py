@@ -12,14 +12,14 @@ def match_ingredient(user_list, ingredients):
     return list(union_recipe)
 
 def server_result_parsing(server_data):
-    json_data = json.loads(server_data)
+    json_data = json.loads(server_data)[0]
     class_name = json_data['class']
     ingredients = json_data['recipe']
     
     return class_name, ingredients 
 
-def client_process(img_data,user_data):
-    server_data = server.connect_with_server(img_data) 
+def client_process(ADDR,img_data,user_data):
+    server_data = server.connect_with_server(ADDR,img_data) 
     class_name , ingredients = server_result_parsing(server_data)
     warning_ingredient = match_ingredient(user_data,ingredients)
     repr = result_repr(class_name, ingredients, warning_ingredient)

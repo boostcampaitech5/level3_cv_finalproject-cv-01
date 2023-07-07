@@ -247,5 +247,7 @@
         "udon": "udon",
         "waffle": "waffle",
         "wolnam_ssam": "wolnam_ssam"
-    }
+    },
+    "IP": "118.67.132.167",
+    "PORT": 30012 
 }

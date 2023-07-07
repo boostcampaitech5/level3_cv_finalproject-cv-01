@@ -254,7 +254,7 @@ class Ui_Dialog(object):
         user_data = [key for key in self.user_data if self.user_data[key]]
         # print(user_data)
         if self.ready_to_send:
-            repr = client_process(self.np_img,user_data)
+            repr = client_process(config.ADDR, self.np_img,user_data)
             self.ready_to_send=False
         self.food_group.set_pepr(repr)
         self.send_button.setEnabled(False)
@@ -318,6 +318,15 @@ class Ui_Dialog(object):
         item.setText(_translate("Dialog", "이미지를 드래그 하세요"))
         self.drag_navigator.setSortingEnabled(__sortingEnabled)
 
+
+def start_ui():
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    Dialog = MainDialog()
+    ui = Ui_Dialog()
+    ui.setupUi(Dialog)
+    Dialog.show()
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
     import sys

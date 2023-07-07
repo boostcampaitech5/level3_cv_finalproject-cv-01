@@ -254,7 +254,7 @@ class Ui_Dialog(object):
         user_data = [key for key in self.user_data if self.user_data[key]]
         # print(user_data)
         if self.ready_to_send:
-            repr = client_process(self.np_img,user_data)
+            repr = client_process(config.ADDR, self.np_img,user_data)
             self.ready_to_send=False
         self.food_group.set_pepr(repr)
         self.send_button.setEnabled(False)

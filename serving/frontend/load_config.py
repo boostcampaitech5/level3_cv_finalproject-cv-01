@@ -8,6 +8,9 @@ class Config:
         self.checklist = self.config['checklist']
         self.ingredients_dict = self.config['ingredients_dict']
         self.class_dict = self.config['class_dict']
+        self.IP = self.config['IP']
+        self.PORT = self.config["PORT"]
+        self.ADDR = (self.IP, self.PORT)
 
     def set_checklist(self,checklist):
         self.config['checklist'] = checklist
