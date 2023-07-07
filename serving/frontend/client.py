@@ -5,9 +5,6 @@ import PyQt5
 from PyQt5.QtWidgets import *
 
 
-def save_checklist(checklist,path):
-    with open(path,'wb') as f:
-        pickle.dump(checklist,f)
 
 
 def main(config):
