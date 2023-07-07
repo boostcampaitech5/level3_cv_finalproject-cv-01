@@ -3,10 +3,10 @@ import json
 import cv2 
 import numpy as np
 # IP = '127.0.0.1'
-# IP = '118.67.132.167'
-# PORT = 30012
-IP = '101.101.208.43'
-PORT = 30010
+IP = '118.67.132.167'
+PORT = 30012
+# IP = '101.101.208.43'
+# PORT = 30010
 ADDR = (IP,PORT)
 def connect(ADDR):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:

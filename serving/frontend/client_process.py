@@ -1,18 +1,15 @@
 import numpy as np
-import pickle
 import json
-from class_dict import class_dict,ingredients_dict
 import server
+from load_config import config
+
+ingredients_dict, class_dict = config.ingredients_dict , config.class_dict
 
 def match_ingredient(user_list, ingredients):
     user_list = set(user_list)
     ingredients = set(ingredients)
     union_recipe = user_list & ingredients
     return list(union_recipe)
-
-def save_checklist(checklist,path):
-    with open(path,'wb') as f:
-        pickle.dump(checklist,f)
 
 def server_result_parsing(server_data):
     json_data = json.loads(server_data)
@@ -24,7 +21,7 @@ def server_result_parsing(server_data):
 def client_process(img_data,user_data):
     server_data = server.connect_with_server(img_data) 
     class_name , ingredients = server_result_parsing(server_data)
-    warning_ingredient = match_ingredient(['meet'],ingredients)
+    warning_ingredient = match_ingredient(user_data,ingredients)
     repr = result_repr(class_name, ingredients, warning_ingredient)
     return repr
 
