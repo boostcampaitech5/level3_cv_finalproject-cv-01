@@ -66,6 +66,16 @@ while True:
 		transformed = transforms(**inputs)
 		image = transformed['image']
 		
+		#Resize, Normalize
+		width = image.shape[0]
+		height = image.shape[1]
+		worh = min(width, height)
+		transforms = A.Compose([
+			A.CenterCrop(worh, worh),
+			A.Resize(224, 224),
+			A.Normalize()
+		])
+		
 		#모델에 넣기 위해서 이미지를 처리한다.
 		image = np.transpose(image, (2, 0, 1))
 		image = np.expand_dims(image, axis=0)
