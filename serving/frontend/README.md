@@ -29,8 +29,8 @@ send 버튼은 이미지가 로드된 경우에만 활성화 됩니다.
 사용자의 checklist는 config.json에 저장되며, 프로그램 시작시 자동으로 불러옵니다.  
 
 1. 초기 실행 화면  
-![Alt text](/readme_img/base_img.png)  
+![Alt text](./readme_img/base_img.png)  
 2. 이미지 드롭 후 전송 화면  
-![Alt text](/readme_img/send_img.png)  
+![Alt text](./readme_img/send_img.png)  
 3. checklist 설정 화면  
-![Alt text](/readme_img/setting.png)  
+![Alt text](./readme_img/setting.png)  
