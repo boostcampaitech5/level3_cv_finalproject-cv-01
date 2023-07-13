@@ -23,12 +23,11 @@ def parse_args():
         type=str,
         default="ResNet18",
     )
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--seed", type=int, default=31)
     parser.add_argument("--num_workers", type=int, default=4)
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--batch", type=int, default=64)
-    parser.add_argument("--resize", type=int, default=128)
-    parser.add_argument("--accumulation_steps", type=int, default=4)
+    parser.add_argument("--resize", type=int, default=224)
     parser.add_argument("--lr", type=float, default=1e-2)
     parser.add_argument("--weight_decay", type=float, default=1e-3)
 
@@ -48,7 +47,8 @@ def set_seed(seed):
 
 
 def custom_collate_fn(sample):
-    img, label = list(zip(*sample))
+    img, label, igd = list(zip(*sample))
     img = np.array(img, dtype=np.float32)
     label = np.array(label, dtype=np.float32)
-    return img, label
+    igd = np.array(igd, dtype=np.float32)
+    return img, label, igd
