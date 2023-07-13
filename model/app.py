@@ -65,7 +65,7 @@ def main(args):
     model_module = getattr(import_module("models"), args.model_name)
     model = model_module(num_classes=93)
 
-    criterion = nn.CrossEntropyLoss()
+    criterion = [nn.CrossEntropyLoss(), nn.CrossEntropyLoss()]
     optimizer = optim.AdamW(
         params=model.parameters(), lr=args.lr, weight_decay=args.weight_decay
     )
