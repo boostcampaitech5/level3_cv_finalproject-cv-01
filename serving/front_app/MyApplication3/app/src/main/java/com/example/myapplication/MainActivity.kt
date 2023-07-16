@@ -38,11 +38,14 @@ class MainActivity : AppCompatActivity() {
         binding.cameraImgView.setImageBitmap(sharedData.bitmap)
         //카메라 버튼 및 설정
         val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
-            result -> if (result.resultCode == Activity.RESULT_OK){
+
+            result -> if (true){
                 val data = result.data
+                Log.d("test",data!!.getStringExtra("from_activity").toString())
                 when(data!!.getStringExtra("from_activity")){
                     "camera"->{
                         binding.cameraImgView.setImageBitmap(sharedData.bitmap)
+//                        Log.d("test","setImage:"+sharedData.image.toString())
                     }
                 }
             }

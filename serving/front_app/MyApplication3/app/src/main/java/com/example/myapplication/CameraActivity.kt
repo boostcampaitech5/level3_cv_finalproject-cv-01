@@ -2,126 +2,155 @@ package com.example.myapplication
 
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageFormat
+import android.graphics.Matrix
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.media.Image
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Surface.ROTATION_0
+import android.view.Surface.ROTATION_180
+import android.view.Surface.ROTATION_270
+import android.view.Surface.ROTATION_90
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.example.myapplication.databinding.ActivityCameraBinding
-import java.nio.ByteBuffer
-import com.example.myapplication.SHARED_DATA
+import java.io.ByteArrayOutputStream
+
+
 class CameraActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCameraBinding
     private lateinit var imageCapture: ImageCapture
     private val sharedData = SHARED_DATA
+    private lateinit var previewView: PreviewView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding =ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        previewView = binding.viewFinder
         binding.revert.setOnClickListener {
             finish()
         }
-        binding.capture.setOnClickListener{
-            //카메라 권한은 있는데 비트맵을 못가져오는 문제 발생.
-            val bitmap = captureCamera()
-            sharedData.bitmap = bitmap
+        binding.capture.setOnClickListener {
+            captureCamera { bitmap ->
+                //임시로 bitmap대신 proxy 반환.
+//                sharedData.bitmap = bitmap
+//                sharedData.image = image
+//                var bitmap = imageProxyToBitmap(image)
+                sharedData.bitmap = bitmap
+                Log.d("test", sharedData.bitmap.toString())
 
-
-            val result = Intent().apply {
-                putExtra("from_activity","camera")
-                if(bitmap == null){
-                    Log.d("test","Camera not available")
-                    putExtra("success",false)
+                val result = Intent().apply {
+                    putExtra("from_activity", "camera")
+                    if (bitmap == null) {
+                        Log.d("test", "Camera not available")
+                        putExtra("success", false)
+                    } else {
+                        putExtra("success", true)
+                    }
                 }
-                else{
-                    putExtra("success",true)
+
+                setResult(Activity.RESULT_OK, result)
+                finish()
+            }
+        }
+        startCamera()
+    }
+
+
+    fun captureCamera(callback: (Bitmap?) -> Unit) {
+        imageCapture.takePicture(ContextCompat.getMainExecutor(this),
+            object : ImageCapture.OnImageCapturedCallback() {
+                override fun onCaptureSuccess(image: ImageProxy) {
+                    //현재 bitmap 변환이 문제가 있어서 imgproxy 반환중
+                    val bitmap = imageProxyToBitmap(image)
+
+                    Log.d("test","end")
+                    callback(bitmap)
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    Log.d("test", "image capture error: ${exception.message}")
+                    callback(null)
                 }
             }
-            setResult(Activity.RESULT_OK,result)
-
-
-            finish()
-        }
-        openCamera()
-        imageCapture = ImageCapture.Builder().build()
+        )
     }
-    fun captureCamera(): Bitmap?{
-        var bitmap: Bitmap? = null
-        imageCapture.takePicture(ContextCompat.getMainExecutor(this),
-            object : ImageCapture.OnImageCapturedCallback(){
-                override fun onCaptureSuccess(image: ImageProxy){
-                    Log.d("test",image.imageInfo.toString())
-                    bitmap = imageProxyToBitmap(image)
-                }
-                override fun onError(exception: ImageCaptureException) {
-                    Log.d("test","image capture error:"+exception.message)
 
-                }
-        } )
-        return bitmap
-    }
-    private fun imageProxyToBitmap(imageProxy: ImageProxy): Bitmap? {
-        @androidx.camera.core.ExperimentalGetImage
-        val image: Image? = imageProxy.image
-        if (image != null) {
-            val buffer: ByteBuffer = image.planes[0].buffer
-            val pixelStride: Int = image.planes[0].pixelStride
-            val rowStride: Int = image.planes[0].rowStride
-            val rowPadding = rowStride - pixelStride * imageProxy.width
-
-            // 비트맵 생성
-            val bitmap = Bitmap.createBitmap(
-                imageProxy.width + rowPadding / pixelStride,
-                imageProxy.height,
-                Bitmap.Config.ARGB_8888
-            )
-
-            // 이미지 데이터 추출
-            bitmap.copyPixelsFromBuffer(buffer)
-
-            image.close()
-            return bitmap
-        }
-        return null
-    }
-    fun openCamera(){
+    private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
         cameraProviderFuture.addListener({
-            // Used to bind the lifecycle of cameras to the lifecycle owner
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            val cameraProvider = cameraProviderFuture.get()
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+            }
 
-            // Preview
-            val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
-                }
+            imageCapture = ImageCapture.Builder().build()
 
-            // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
-                // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
-
-                // Bind use cases to camera
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview)
-
-            } catch(exc: Exception) {
-                Log.e("test", "Use case binding failed", exc)
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
+            } catch (exc: Exception) {
+                Log.e("CameraX", "Use case binding failed", exc)
             }
-
         }, ContextCompat.getMainExecutor(this))
     }
+    private fun updateTransform() {
+        val matrix = Matrix()
+
+        // 디스플레이 회전에 따라 보정
+        val rotationDegrees = when (previewView.display.rotation) {
+            ROTATION_0 -> 0
+            ROTATION_90 -> 90
+            ROTATION_180 -> 180
+            ROTATION_270 -> 270
+            else -> 0
+        }
+        Log.d("test",rotationDegrees.toString())
+        // 카메라 센서와 디스플레이의 회전 각도 보정
+        matrix.postRotate(-rotationDegrees.toFloat(), previewView.width / 2f, previewView.height / 2f)
+
+    }
+    private fun imageProxyToBitmap(imageProxy: ImageProxy?): Bitmap? {
+
+        try {
+            if (imageProxy != null) {
+                @androidx.camera.core.ExperimentalGetImage
+                val image: Image? = imageProxy.image
+
+                val buffer = image!!.planes[0].buffer
+                val bytes = ByteArray(buffer.capacity()).also { buffer.get(it) }
+                val bitmap:Bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                Log.d("test","rotate:${imageProxy.imageInfo.rotationDegrees}")
+                val rotationDegrees = when (imageProxy.imageInfo.rotationDegrees) {
+                    0 -> 0
+                    90 -> 90
+                    180 -> 180
+                    270 -> 270
+                    else -> 0
+                }
+                val matrix = Matrix()
+                matrix.postRotate(rotationDegrees.toFloat())
+                return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            }
+            return null
+        }
+        catch (exc:Exception){
+            Log.d("test","convert : "+exc.toString())
+            return null
+        }
+    }
+
 }
