@@ -65,11 +65,11 @@ def main(args):
     model_module = getattr(import_module("models"), args.model_name)
     model = model_module(num_classes=93)
 
-    criterion = [nn.CrossEntropyLoss(), nn.CrossEntropyLoss()]
+    criterion = [nn.BCEWithLogitsLoss(), nn.BCEWithLogitsLoss()]
     optimizer = optim.AdamW(
         params=model.parameters(), lr=args.lr, weight_decay=args.weight_decay
     )
-    scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=1e-3)
+    scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=args.eta_min)
     train(model, optimizer, criterion, scheduler, train_loader, valid_loader, args)
     wandb.finish()
 
