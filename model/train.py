@@ -27,10 +27,13 @@ def validation(model, criterion, valid_loader):
                 torch.tensor(ingredients).cuda(),
             )
             cls_output, rcp_output = model(images)
+            cls_loss = criterion[0](cls_output, labels)
+            rcp_loss = criterion[1](rcp_output, ingredients)
+            total_cls_loss.append(cls_loss)
+            total_rcp_loss.append(rcp_loss)
+
             cls_output = F.sigmoid(cls_output)
             rcp_output = F.sigmoid(rcp_output)
-            cls_loss = criterion[0](cls_output, labels)
-            rcp_loss = criterion[0](rcp_output, ingredients)
             cls_output = (cls_output >= cls_thr).float()
             rcp_output = (rcp_output >= rcp_thr).float()
             cls_f1 = f1_score(
@@ -57,8 +60,6 @@ def validation(model, criterion, valid_loader):
                 average="macro",
                 zero_division=0,
             )
-            total_cls_loss.append(cls_loss)
-            total_rcp_loss.append(rcp_loss)
             cls_f1_scores.append(cls_f1)
             rcp_f1_scores.append(rcp_f1)
             cls_precision_scores.append(cls_precision)
@@ -100,13 +101,10 @@ def train(model, optimizer, criterion, scheduler, train_loader, valid_loader, ar
 
             with torch.cuda.amp.autocast(enabled=True):
                 cls_output, rcp_output = model(images)
-                cls_output = F.sigmoid(cls_output)
-                rcp_output = F.sigmoid(rcp_output)
                 cls_loss = criterion[0](cls_output, labels)
                 rcp_loss = criterion[1](rcp_output, ingredients)
-                loss = cls_loss + rcp_loss
-
-            scaler.scale(loss).backward()
+            scaler.scale(rcp_loss).backward(retain_graph=True)
+            scaler.scale(cls_loss).backward()
             scaler.step(optimizer)
             scaler.update()
 
@@ -147,7 +145,8 @@ def train(model, optimizer, criterion, scheduler, train_loader, valid_loader, ar
         )
 
         if score[0] > best_f1_score and score[1] > best_precision_score:
-            best_score = score
+            best_f1_score = score[0]
+            best_precision_score = score[1]
             output_path = os.path.join(args.save_path, f"{args.model_name}_best.pth")
             torch.save(model, output_path)
         output_path = os.path.join(args.save_path, f"{args.model_name}_latest.pth")

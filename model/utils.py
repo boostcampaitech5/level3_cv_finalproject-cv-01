@@ -29,6 +29,7 @@ def parse_args():
     parser.add_argument("--batch", type=int, default=64)
     parser.add_argument("--resize", type=int, default=224)
     parser.add_argument("--lr", type=float, default=1e-2)
+    parser.add_argument("--eta_min", type=float, default=1e-3)
     parser.add_argument("--weight_decay", type=float, default=1e-3)
 
     args = parser.parse_args()
