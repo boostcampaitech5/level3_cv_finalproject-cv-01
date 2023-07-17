@@ -10,6 +10,7 @@ from importlib import import_module
 
 from dataset import *
 from models import *
+from loss import CombinationLoss
 from train import *
 from utils import *
 
@@ -34,6 +35,7 @@ def main(args):
     tf = A.Compose(
         [
             A.Resize(args.resize, args.resize),
+            A.HorizontalFlip(),
             A.Normalize(),
         ]
     )
@@ -65,7 +67,14 @@ def main(args):
     model_module = getattr(import_module("models"), args.model_name)
     model = model_module(num_classes=93)
 
-    criterion = [nn.BCEWithLogitsLoss(), nn.BCEWithLogitsLoss()]
+    criterion = [
+        CombinationLoss(
+            num_classes=93, weight=[0.4, 0.4, 0.4], smoothing=0.1, gamma=2.0
+        ),
+        CombinationLoss(
+            num_classes=17, weight=[0.4, 0.4, 0.4], smoothing=0.1, gamma=2.0
+        ),
+    ]
     optimizer = optim.AdamW(
         params=model.parameters(), lr=args.lr, weight_decay=args.weight_decay
     )
