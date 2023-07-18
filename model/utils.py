@@ -53,3 +53,10 @@ def custom_collate_fn(sample):
     label = np.array(label, dtype=np.float32)
     igd = np.array(igd, dtype=np.float32)
     return img, label, igd
+
+
+def custom_combine_collate_fn(sample):
+    img, label = list(zip(*sample))
+    img = np.array(img, dtype=np.float32)
+    label = np.array(label, dtype=np.float32)
+    return img, label
