@@ -42,17 +42,21 @@ class CameraActivity : AppCompatActivity() {
             finish()
         }
         binding.capture.setOnClickListener {
-            captureCamera { bitmap ->
+            captureCamera { image ->
                 //임시로 bitmap대신 proxy 반환.
 //                sharedData.bitmap = bitmap
 //                sharedData.image = image
 //                var bitmap = imageProxyToBitmap(image)
-                sharedData.bitmap = bitmap
+
+                sharedData.bitmap = imageProxyToBitmap(image)
+
+
+
                 Log.d("test", sharedData.bitmap.toString())
 
                 val result = Intent().apply {
                     putExtra("from_activity", "camera")
-                    if (bitmap == null) {
+                    if (image == null) {
                         Log.d("test", "Camera not available")
                         putExtra("success", false)
                     } else {
@@ -68,15 +72,16 @@ class CameraActivity : AppCompatActivity() {
     }
 
 
-    fun captureCamera(callback: (Bitmap?) -> Unit) {
+    fun captureCamera(callback: (ImageProxy?) -> Unit) {
         imageCapture.takePicture(ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageCapturedCallback() {
                 override fun onCaptureSuccess(image: ImageProxy) {
                     //현재 bitmap 변환이 문제가 있어서 imgproxy 반환중
-                    val bitmap = imageProxyToBitmap(image)
+//                    val bitmap = imageProxyToBitmap(image)
 
-                    Log.d("test","end")
-                    callback(bitmap)
+                    Log.d("test","camear capture success")
+//                    callback(bitmap)
+                    callback(image)
                 }
 
                 override fun onError(exception: ImageCaptureException) {
@@ -118,7 +123,7 @@ class CameraActivity : AppCompatActivity() {
             ROTATION_270 -> 270
             else -> 0
         }
-        Log.d("test",rotationDegrees.toString())
+//        Log.d("test",rotationDegrees.toString())
         // 카메라 센서와 디스플레이의 회전 각도 보정
         matrix.postRotate(-rotationDegrees.toFloat(), previewView.width / 2f, previewView.height / 2f)
 
@@ -132,6 +137,7 @@ class CameraActivity : AppCompatActivity() {
 
                 val buffer = image!!.planes[0].buffer
                 val bytes = ByteArray(buffer.capacity()).also { buffer.get(it) }
+                sharedData.image_byte = bytes.clone()
                 val bitmap:Bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 Log.d("test","rotate:${imageProxy.imageInfo.rotationDegrees}")
                 val rotationDegrees = when (imageProxy.imageInfo.rotationDegrees) {

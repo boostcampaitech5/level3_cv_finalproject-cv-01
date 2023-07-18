@@ -18,6 +18,7 @@ class SettingActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingBinding
     private val shared_data = SHARED_DATA
     private var checklist:MutableMap<String, Boolean> = shared_data.data.checklist
+    private val ingredient_dict = shared_data.data.ingredients_dict
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -26,7 +27,6 @@ class SettingActivity : AppCompatActivity() {
         binding.settingRevertBnt.setOnClickListener{
             val gson = Gson()
             val jsonString = gson.toJson(shared_data.data)
-            Log.d("test","dir:${filesDir.toString()}")
             val file = File(filesDir,"user_data.json")
             file.writeText(jsonString)
             finish()
@@ -39,7 +39,7 @@ class SettingActivity : AppCompatActivity() {
             buttonView, isChecked ->
 //            Log.d("test",buttonView.text.toString()+isChecked.toString())
 
-            val key:String = buttonView.text.toString()
+            val key:String = buttonView.tag.toString()
             checklist[key] = isChecked
 
         }
@@ -47,7 +47,8 @@ class SettingActivity : AppCompatActivity() {
         for (check in checklist){
 //            Log.d("test",check.key)
             val checkbox = CheckBox(this).apply{
-                text = check.key
+                text = ingredient_dict[check.key]
+                tag = check.key
                 isChecked = check.value
             }
             checkbox.setOnCheckedChangeListener(checkBoxListener)
