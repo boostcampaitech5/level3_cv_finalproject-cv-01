@@ -27,7 +27,7 @@ import java.nio.ByteBuffer
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var info_frag: InfoFragment
+    private lateinit var info_frag: ResultListDialog
     private val sharedData = SHARED_DATA
     private lateinit var bitmap: Bitmap
     val PERM_STORAGE = 9
@@ -40,13 +40,20 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        info_frag = InfoFragment()
+
         setContentView(binding.root)
 
         //권한 획득
 //        requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),9)
         requestPermissions(arrayOf(Manifest.permission.CAMERA),PERM_CAMERA)
+
         //하단 정보 프래그먼트
+        info_frag = ResultListDialog()
+        supportFragmentManager.beginTransaction()
+            .add(R.id.info_container,info_frag)
+            .commit()
+//        info_frag.show(supportFragmentManager,"info")
+
 
 
         //data.json 파싱 및 데이터 저장
@@ -137,13 +144,9 @@ class MainActivity : AppCompatActivity() {
     }
     fun pushUpInfo(){
 
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.add(R.id.lower_frag, info_frag)
-        transaction.addToBackStack("Info")
-        transaction.commit()
     }
     fun pushDownInfo(){
-        onBackPressed()
+
     }
     fun dataParsing(){
         //res.raw.data는 읽기 전용이기 떄문에 내부저장소에 파일 저장하는 형식으로 교체
