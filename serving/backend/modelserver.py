@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Form, Request, File, UploadFile
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
+from fastapi.templating import Jinja2Templates
 
 import uvicorn
 import torch
@@ -10,46 +9,38 @@ import albumentations as A
 import numpy as np
 import torch.nn.functional as F
 
+#모델 출력을 dict로 만드는 함수
 def output2dict(output):
-    class_threshold = 0
-    allergy_threshold = 0.5
-    
-    arr1 = [(score, index) for index, score in enumerate(output[:93])]
-    arr1.sort()
-    arr1.reverse()
+    THRESHOLD = 0.5
+    arr = [(score, index) for index, score in enumerate(output)]
+    arr.sort()
+    arr.reverse()
     result = []
     for i in range(3):
-        score = arr1[i][0]
-        index = arr1[i][1]
+        score = arr[i][0]
+        index = arr[i][1]
         dish = classes[str(index)]
-        if score > class_threshold:
+        if score > THRESHOLD:
             valid = True
         else:
             valid = False
         dictionary = {'class' : dish, 'recipe' : recipes[dish], 'valid' : valid}
         result.append(dictionary)
-
-    arr2 = [(score, index) for index, score in enumerate(output[93:])]
-    arr2.sort()
-    arr2.reverse()
-    for (score, index) in arr2:
-        if score > allergy_threshold:
-            for i in range(len(result)):
-                result[i]['recipe'].append(allergy[str(index)])
-
     return result
 
 app = FastAPI()
+templates = Jinja2Templates(directory='./')
 
 @app.post('/upload')
-async def upload(file: dict):
-    with open('/opt/ml/fastapi/data/test.jpg', 'wb') as f:
-        image = np.array(file['image'], dtype=np.uint8)
-        f.write(image.tobytes())
+async def upload(file: UploadFile = File(...)):
+    global num
+    num = num + 1
+    
+    with open('/opt/ml/fastapi/data/' + str(num) + '.jpg', 'wb') as f:
+        content = await file.read()
+        f.write(content)
 
-    image = cv2.imread('/opt/ml/fastapi/data/test.jpg', cv2.IMREAD_COLOR)
-
-    print(image.shape)
+    image = cv2.imread('/opt/ml/fastapi/data/' + str(num) + '.jpg', cv2.IMREAD_COLOR)
 
     #transforms
     width = image.shape[0]
@@ -72,19 +63,23 @@ async def upload(file: dict):
 
     #inference
     output = model(image)
-    output = F.sigmoid(output[0])
+    output = F.softmax(output[0], dim=0)
     result = output2dict(output)
-    
-    return JSONResponse(content=jsonable_encoder(result), status_code=200)
+
+    return result
 
 if __name__ == '__main__':
-    model = torch.load('/opt/ml/fastapi/pthfile/Tresnet_m_ml_decoder_recipy_best.pth').cuda()
+    model = torch.load('/opt/ml/fastapi/pthfile/ResNet18_best.pth').cuda()
     model.eval()
+
     with open('/opt/ml/fastapi/order/order.json') as file:
         classes = json.load(file)
+
     with open('/opt/ml/fastapi/DB/DB.json') as file:
         recipes = json.load(file)
-    with open('/opt/ml/fastapi/allergy/allergy.json') as file:
-        allergy = json.load(file)
+
+    #파일 이름에 사용할 변수
+    global num
+    num = 0
 
     uvicorn.run(app, host='', port=30009)

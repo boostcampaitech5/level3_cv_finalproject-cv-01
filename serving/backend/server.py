@@ -1,108 +1,45 @@
-import socket
-import json
+from fastapi import FastAPI, Form, Request, File, UploadFile
+from fastapi.templating import Jinja2Templates
+
+import uvicorn
 import torch
-import json
 import cv2
-import torch.nn.functional as F
-import numpy as np
+import json
+import requests
+import threading
 import albumentations as A
+import numpy as np
+import torch.nn.functional as F
 
-PATH = '/opt/ml/server/pthfile/ResNet18_best.pth'
-HOST = ''
-PORT = 30010
-THRESHOLD = 0.3
+app = FastAPI()
 
-def make_head(data):
-	tem = 'len' + ' ' + str(len(data))
-	return '%-16s' % tem
+@app.post('/upload')
+async def upload(file: bytes = File(...)):#UploadFile(파일을 받지 않고 코드를 진행하는 거 같다.) or bytes(파일을 다 받고 코드를 진행하는 거 같다.)
+    url = 'http://101.101.208.43:30009/upload'
+    
+    files = {'file' : file}
 
-#모델 로드
-model = torch.load(PATH).cuda()
-model.eval()
+    #Lock을 획득한다.
+    lockindex = -1
+    while True:
+        for index, L in enumerate(lock):
+            if L.acquire(timeout=0.1):
+                lockindex = index
+                break
+        if lockindex > -1:
+            break
+        else:
+            print('blocked')
+    
+    response = requests.post(url, files=files)
 
-#Resize, Normalize
-transforms = A.Compose([
-	A.Resize(224, 224),
-	A.Normalize()
-])
+    lock[lockindex].release()
 
-with open('/opt/ml/server/order/order.json') as file:
-	classes = json.load(file)
+    return response.json()
 
-with open('/opt/ml/server/DB/DB.json') as file:
-	recipes = json.load(file)
+if __name__ == '__main__':
+    #Lock을 획득한 스레드는 모델 서버에 파일을 전송한다.
+    lock = []
+    lock.append(threading.Lock())
 
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind((HOST, PORT))
-
-server_socket.listen(1)
-print("waiting...")
-
-while True:
-	client_socket, client_address = server_socket.accept()
-	client_socket.settimeout(10)
-	print("connected : ", client_address)
-	
-	head = client_socket.recv(32).decode().replace(':', ' ').split()
-	length = int(head[1])
-	command = head[3]
-	
-	data = b''
-	limit = 0
-	while length:
-		tem = client_socket.recv(1024)
-		data = data + tem
-		length = length - len(tem)
-		limit = limit + 1
-		if limit == 1000:
-			raise
-	
-	if command == 'image':
-		data = np.frombuffer(data, dtype=np.uint8)#1차원 배열
-		image = cv2.imdecode(data, cv2.IMREAD_COLOR)#2차원 배열
-		
-		#???
-		inputs = {'image' : image}
-		transformed = transforms(**inputs)
-		image = transformed['image']
-		
-		#Resize, Normalize
-		width = image.shape[0]
-		height = image.shape[1]
-		worh = min(width, height)
-		transforms = A.Compose([
-			A.CenterCrop(worh, worh),
-			A.Resize(224, 224),
-			A.Normalize()
-		])
-		
-		#모델에 넣기 위해서 이미지를 처리한다.
-		image = np.transpose(image, (2, 0, 1))
-		image = np.expand_dims(image, axis=0)
-		image = torch.tensor(image).cuda()
-		
-		output = model(image)
-		output = F.softmax(output[0], dim=0)
-		
-		#출력을 정리해서 dict로 만든다.
-		arr = [(value, index) for index, value in enumerate(output)]#가장 큰 3개의 인덱스를 얻기 위해서 arr를 만든다.
-		arr.sort()
-		arr.reverse()
-		result = []
-		for i in range(3):
-			index = arr[i][1]
-			dish = classes[str(index)]
-			if arr[i][0] > THRESHOLD:
-				valid = True
-			else:
-				valid = False
-			dictionary = {'class' : dish, 'recipe' : recipes[dish], 'valid' : valid}
-			result.append(dictionary)
-	
-	result = json.dumps(result)#dict to str
-	
-	client_socket.sendall((packet.make_head(result)+packet.make_head([0])+result).encode())
-	
-	client_socket.close()
-
-server_socket.close()
+    uvicorn.run(app, host='', port=30010)
