@@ -1,4 +1,5 @@
 DB/DB.json
 order/order.json
 pthfile/ResNet18_best.pth
+pthfile/Tresnet_m_ml_decoder_recipy_best.pth
 allergy/allergy.json
