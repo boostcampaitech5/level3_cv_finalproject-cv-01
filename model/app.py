@@ -10,7 +10,7 @@ from importlib import import_module
 
 from dataset import *
 from models import *
-from loss import CombinationLoss
+from loss import *
 from train import *
 from utils import *
 
@@ -39,10 +39,10 @@ def main(args):
             A.Normalize(),
         ]
     )
-    train_dataset = CustomDataset(
+    train_dataset = CustomCombineDataset(
         "/opt/ml/level3_cv_finalproject-cv-01/model", is_train=True, tf=tf
     )
-    valid_dataset = CustomDataset(
+    valid_dataset = CustomCombineDataset(
         "/opt/ml/level3_cv_finalproject-cv-01/model",
         is_train=False,
         tf=tf,
@@ -52,7 +52,7 @@ def main(args):
         batch_size=args.batch,
         shuffle=True,
         num_workers=args.num_workers,
-        collate_fn=custom_collate_fn,
+        collate_fn=custom_combine_collate_fn,
         drop_last=False,
     )
     valid_loader = DataLoader(
@@ -60,26 +60,33 @@ def main(args):
         batch_size=args.batch,
         shuffle=True,
         num_workers=args.num_workers,
-        collate_fn=custom_collate_fn,
+        collate_fn=custom_combine_collate_fn,
         drop_last=False,
     )
 
     model_module = getattr(import_module("models"), args.model_name)
-    model = model_module(num_classes=93)
+    model = model_module(num_classes=110)
 
-    criterion = [
-        CombinationLoss(
-            num_classes=93, weight=[0.4, 0.4, 0.4], smoothing=0.1, gamma=2.0
-        ),
-        CombinationLoss(
-            num_classes=17, weight=[0.4, 0.4, 0.4], smoothing=0.1, gamma=2.0
-        ),
-    ]
+    # criterion = [
+    #     CLSLoss(num_classes=93, weight=[1, 0.1], smoothing=0.1),
+    #     RCPLoss(num_classes=17, weight=[1, 0.2], smoothing=0.1, gamma=2.0),
+    # ]
+    criterion = AsymmetricLoss(
+        gamma_neg=4,
+        gamma_pos=0,
+        clip=0.05,
+        eps=1e-8,
+        disable_torch_grad_focal_loss=True,
+    )
     optimizer = optim.AdamW(
         params=model.parameters(), lr=args.lr, weight_decay=args.weight_decay
     )
     scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=args.eta_min)
-    train(model, optimizer, criterion, scheduler, train_loader, valid_loader, args)
+
+    # train(model, optimizer, criterion, scheduler, train_loader, valid_loader, args)
+    combine_train(
+        model, optimizer, criterion, scheduler, train_loader, valid_loader, args
+    )
     wandb.finish()
 
 
