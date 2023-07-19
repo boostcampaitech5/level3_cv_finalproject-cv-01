@@ -110,12 +110,12 @@ class ResultListDialog : Fragment() {
     fun translateRecipe(recipes: List<String>): SpannableStringBuilder {
         var translatedString = ""
         val checklist = SHARED_DATA.data.checklist
-        val intersect_ingredients = checklist.filterValues{ it }.keys.intersect(main_data.recipes.toSet())
 
-        translatedString = recipes.joinToString(" ")
+        val intersect_ingredients = checklist.filterValues{ it }.keys.intersect(main_data.recipes.toSet())
+        translatedString = recipes.map{ingredients_dict[it]}.joinToString(" ")
         val spanText = SpannableStringBuilder(translatedString)
         for(dup in intersect_ingredients){
-            val word_start = translatedString.indexOf(dup)
+            val word_start = translatedString.indexOf(ingredients_dict[dup]!!)
 //            Log.d("test","dup: ${dup}, ${word_start}")
             spanText.setSpan(ForegroundColorSpan(Color.parseColor("#ff0000")),word_start,word_start+dup.length,
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

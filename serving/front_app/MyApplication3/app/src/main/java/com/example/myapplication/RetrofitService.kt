@@ -19,7 +19,7 @@ data class serverData(
 data class resultData(
     @SerializedName("class")
     val class_name: String,
-    @SerializedName("recipes")
+    @SerializedName("recipe")
     val recipes: List<String>,
     @SerializedName("valid")
     val valid: Boolean
