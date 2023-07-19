@@ -115,9 +115,9 @@ class ResultListDialog : Fragment() {
         translatedString = recipes.map{ingredients_dict[it]}.joinToString(" ")
         val spanText = SpannableStringBuilder(translatedString)
         for(dup in intersect_ingredients){
+            var dup_kr = ingredients_dict[dup]
             val word_start = translatedString.indexOf(ingredients_dict[dup]!!)
-//            Log.d("test","dup: ${dup}, ${word_start}")
-            spanText.setSpan(ForegroundColorSpan(Color.parseColor("#ff0000")),word_start,word_start+dup.length,
+            spanText.setSpan(ForegroundColorSpan(Color.parseColor("#ff0000")),word_start,word_start+dup_kr!!.length,
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         return spanText
