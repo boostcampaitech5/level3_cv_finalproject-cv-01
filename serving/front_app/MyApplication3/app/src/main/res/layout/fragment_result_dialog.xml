@@ -45,6 +45,7 @@
                 android:layout_height="171dp"
                 android:layout_marginTop="15dp"
                 android:text="TextView"
+                android:bufferType="spannable"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -71,15 +72,27 @@
                     android:id="@+id/sub_info1"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_margin="10dp"
                     android:layout_weight="1"
-                    android:text="TextView" />
+                    android:background="@drawable/sub_info_style"
+                    android:clickable="true"
+                    android:gravity="center"
+                    android:tag="sub1"
+                    android:text="TextView"
+                    android:textAlignment="center" />
 
                 <TextView
                     android:id="@+id/sub_info2"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_margin="10dp"
                     android:layout_weight="1"
-                    android:text="TextView" />
+                    android:background="@drawable/sub_info_style"
+                    android:clickable="true"
+                    android:gravity="center"
+                    android:tag="sub2"
+                    android:text="TextView"
+                    android:textAlignment="center" />
             </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>

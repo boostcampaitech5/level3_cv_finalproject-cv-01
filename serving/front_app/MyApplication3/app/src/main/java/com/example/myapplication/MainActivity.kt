@@ -47,11 +47,7 @@ class MainActivity : AppCompatActivity() {
 //        requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),9)
         requestPermissions(arrayOf(Manifest.permission.CAMERA),PERM_CAMERA)
 
-        //하단 정보 프래그먼트
-        info_frag = ResultListDialog()
-        supportFragmentManager.beginTransaction()
-            .add(R.id.info_container,info_frag)
-            .commit()
+
 //        info_frag.show(supportFragmentManager,"info")
 
 
@@ -59,6 +55,12 @@ class MainActivity : AppCompatActivity() {
         //data.json 파싱 및 데이터 저장
         dataParsing()
 
+
+        //하단 정보 프래그먼트
+        info_frag = ResultListDialog()
+        supportFragmentManager.beginTransaction()
+            .add(R.id.info_container,info_frag)
+            .commit()
         //setting menu 설정
         val actionBar = supportActionBar
         setSupportActionBar(binding.mainToolbar)
@@ -116,6 +118,9 @@ class MainActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
+    fun setBottomSheet(server_data: serverData){
+        info_frag.setInfoData(server_data)
+    }
     fun connectServer(){
         //서버 통신 테스트용
 //        service.test().enqueue(object :Callback<String>{
@@ -134,6 +139,7 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(call: Call<serverData>, response: Response<serverData>) {
                 Log.d("test","return : ${response.toString()}")
                 Log.d("test",response.body()!!.toString())
+                setBottomSheet(response.body()!!)
             }
             override fun onFailure(call: Call<serverData>, t: Throwable) {
                 Log.d("test","fail: ${t.printStackTrace()}")
