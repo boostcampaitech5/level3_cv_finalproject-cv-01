@@ -10,9 +10,9 @@ def dd(data:dict):
     with open("./img.jpg",'wb') as f:
         np_arr = np.array(data['image'], dtype=np.uint8)
         f.write(np_arr.tobytes())
-    return JSONResponse(content=jsonable_encoder({"result":[{"class":"baek_sook", "recipes":["egg","beef","pork"]},
-                                                            {"class":"BBQ", "recipes":["egg","beef","pork"]},
-                                                            {"class":"beef_tartare", "recipes":["egg","beef","pork"]}]}),status_code=200)
+    return JSONResponse(content=jsonable_encoder({"result":[{"class":"baek_sook", "recipes":["egg","beef","pork"],'valid':True},
+                                                            {"class":"BBQ", "recipes":["egg","beef","pork"],'valid':True},
+                                                            {"class":"beef_tartare", "recipes":["egg","beef","pork"],'valid':True}]}),status_code=200)
 
 @app.get('/test')
 def test():
