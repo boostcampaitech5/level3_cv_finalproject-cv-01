@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 
 import com.example.myapplication.databinding.ActivityMainBinding
@@ -21,8 +22,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 import com.example.myapplication.serverData
 import com.example.myapplication.clientData
+import okhttp3.OkHttpClient
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -90,11 +93,17 @@ class MainActivity : AppCompatActivity() {
         }
         //http 통신 설정
         Log.d("test",url_string)
-        retrofit = Retrofit.Builder().baseUrl(url_string)
+        retrofit = Retrofit.Builder()
+            .client(OkHttpClient.Builder()
+                .callTimeout(330,TimeUnit.SECONDS)
+                .connectTimeout(330,TimeUnit.SECONDS)
+                .build())
+            .baseUrl(url_string)
             .addConverterFactory(GsonConverterFactory.create()).build()
         service = retrofit.create(RetrofitService::class.java)
         // 서버 접속 버튼
         binding.connectServer.setOnClickListener{
+
             Log.d("test","serverconnect_listener")
             binding.connectServer.isEnabled = false
             connectServer()
@@ -145,8 +154,6 @@ class MainActivity : AppCompatActivity() {
                 Log.d("test","fail: ${t.printStackTrace()}")
             }
         })
-
-
     }
     fun pushUpInfo(){
 
@@ -185,6 +192,7 @@ class MainActivity : AppCompatActivity() {
 
         sharedData.data = data.copy()
         url_string = "http://"+data.IP +":"+ data.PORT.toString()
+
 //        Log.d("test",data.class_dict.toString())
 //        Log.d("test",data.ingredients_dict.toString())
 //        Log.d("test",data.IP)

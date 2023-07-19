@@ -26,6 +26,8 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.example.myapplication.databinding.ActivityCameraBinding
 import java.io.ByteArrayOutputStream
+import java.lang.Integer.max
+import java.lang.Integer.min
 
 
 class CameraActivity : AppCompatActivity() {
@@ -137,8 +139,17 @@ class CameraActivity : AppCompatActivity() {
 
                 val buffer = image!!.planes[0].buffer
                 val bytes = ByteArray(buffer.capacity()).also { buffer.get(it) }
-                sharedData.image_byte = bytes.clone()
-                val bitmap:Bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+//                sharedData.image_byte = bytes.clone()
+                var bitmap:Bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                var height= bitmap.height
+                var width = bitmap.width
+                if(min(height,width)>256){
+                    val pivot = min(height,width)/256.0
+                    height = height.div(pivot).toInt()
+                    width = width.div(pivot).toInt()
+                }
+                bitmap = Bitmap.createScaledBitmap(bitmap,width,height,true)
+
                 Log.d("test","rotate:${imageProxy.imageInfo.rotationDegrees}")
                 val rotationDegrees = when (imageProxy.imageInfo.rotationDegrees) {
                     0 -> 0
@@ -149,7 +160,11 @@ class CameraActivity : AppCompatActivity() {
                 }
                 val matrix = Matrix()
                 matrix.postRotate(rotationDegrees.toFloat())
-                return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true)
+                val out_stream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG,100,out_stream)
+                sharedData.image_byte = out_stream.toByteArray()
+                return bitmap
             }
             return null
         }
