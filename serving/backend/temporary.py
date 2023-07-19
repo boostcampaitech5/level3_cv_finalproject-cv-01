@@ -37,6 +37,8 @@ def output2dict(output):
             for i in range(len(result)):
                 result[i]['recipe'].append(allergy[str(index)])
 
+    result = {'result' : result}
+
     return result
 
 app = FastAPI()
