@@ -240,7 +240,7 @@ def combine_train(
 
             with torch.cuda.amp.autocast(enabled=True):
                 outputs = model(images)
-            loss = criterion(outputs, labels)
+                loss = criterion(outputs, labels)
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
