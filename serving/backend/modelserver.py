@@ -50,7 +50,7 @@ async def upload(file: dict):
     num = num + 1
     
     with open('./data/' + str(num) + '.jpg', 'wb') as f:
-        image = np.array(file['image'], dtype=np.unint8).tobytes()
+        image = np.array(file['image'], dtype=np.uint8).tobytes()
         f.write(image)
 
     image = cv2.imread('./data/' + str(num) + '.jpg', cv2.IMREAD_COLOR)
@@ -78,6 +78,8 @@ async def upload(file: dict):
     output = model(image)
     output = F.sigmoid(output[0])
     result = output2dict(output)
+
+    print(result, type(result))
 
     return result
 
