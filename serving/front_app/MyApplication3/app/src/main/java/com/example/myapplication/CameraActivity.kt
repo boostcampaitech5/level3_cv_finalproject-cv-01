@@ -95,13 +95,13 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun startCamera() {
+        binding.viewFinder.scaleType = PreviewView.ScaleType.FIT_CENTER
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
             }
-
             imageCapture = ImageCapture.Builder().build()
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -113,6 +113,7 @@ class CameraActivity : AppCompatActivity() {
                 Log.e("CameraX", "Use case binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(this))
+
     }
     private fun updateTransform() {
         val matrix = Matrix()
