@@ -86,7 +86,7 @@ def train(model, optimizer, criterion, scheduler, train_loader, valid_loader, ar
     print("Start Train...")
 
     scaler = torch.cuda.amp.GradScaler(enabled=True)
-    best_f1_score, best_precision_score = 0, 0
+    best_cls_f1_score, best_rcp_f1_score = 0, 0
     model.cuda()
     for epoch in range(args.epochs):
         cur_time = datetime.datetime.now()
@@ -144,9 +144,9 @@ def train(model, optimizer, criterion, scheduler, train_loader, valid_loader, ar
             }
         )
 
-        if score[0] > best_f1_score and score[1] > best_precision_score:
-            best_f1_score = score[0]
-            best_precision_score = score[1]
+        if score[0] > best_cls_f1_score and score[1] > best_rcp_f1_score:
+            best_cls_f1_score = score[0]
+            best_rcp_f1_score = score[1]
             output_path = os.path.join(args.save_path, f"{args.model_name}_best.pth")
             torch.save(model, output_path)
         output_path = os.path.join(args.save_path, f"{args.model_name}_latest.pth")
@@ -226,7 +226,7 @@ def combine_train(
     print("Start Train...")
 
     scaler = torch.cuda.amp.GradScaler(enabled=True)
-    best_f1_score, best_precision_score = 0, 0
+    best_cls_f1_score, best_rcp_f1_score = 0, 0
     model.cuda()
     for epoch in range(args.epochs):
         cur_time = datetime.datetime.now()
@@ -240,7 +240,7 @@ def combine_train(
 
             with torch.cuda.amp.autocast(enabled=True):
                 outputs = model(images)
-            loss = criterion(outputs, labels)
+                loss = criterion(outputs, labels)
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
@@ -277,9 +277,9 @@ def combine_train(
             }
         )
 
-        if score[0] > best_f1_score and score[1] > best_precision_score:
-            best_f1_score = score[0]
-            best_precision_score = score[1]
+        if score[0] > best_cls_f1_score and score[1] > best_rcp_f1_score:
+            best_cls_f1_score = score[0]
+            best_rcp_f1_score = score[1]
             output_path = os.path.join(args.save_path, f"{args.model_name}_best.pth")
             torch.save(model, output_path)
         output_path = os.path.join(args.save_path, f"{args.model_name}_latest.pth")
