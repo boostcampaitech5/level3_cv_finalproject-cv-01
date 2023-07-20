@@ -60,3 +60,11 @@ def custom_combine_collate_fn(sample):
     img = np.array(img, dtype=np.float32)
     label = np.array(label, dtype=np.float32)
     return img, label
+
+
+def custom_combine_test_collate_fn(sample):
+    img_path, img, label = list(zip(*sample))
+    img_path = np.array(img_path, dtype=str)
+    img = np.array(img, dtype=np.float32)
+    label = np.array(label, dtype=np.float32)
+    return img_path, img, label
