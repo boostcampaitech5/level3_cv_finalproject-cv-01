@@ -27,8 +27,8 @@ class ResultListDialog : Fragment() {
     private lateinit var main_data: resultData
     private lateinit var sub_data1: resultData
     private lateinit var sub_data2: resultData
-    val class_dict = SHARED_DATA.data.class_dict
-    val ingredients_dict = SHARED_DATA.data.ingredients_dict
+    val class_dict = USER_DATA.data.class_dict
+    val ingredients_dict = USER_DATA.data.ingredients_dict
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -109,7 +109,7 @@ class ResultListDialog : Fragment() {
     }
     fun translateRecipe(recipes: List<String>): SpannableStringBuilder {
         var translatedString = ""
-        val checklist = SHARED_DATA.data.checklist
+        val checklist = USER_DATA.data.checklist
 
         val intersect_ingredients = checklist.filterValues{ it }.keys.intersect(main_data.recipes.toSet())
         translatedString = recipes.map{ingredients_dict[it]}.joinToString(" ")

@@ -16,9 +16,8 @@ import java.lang.Exception
 class SettingActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingBinding
-    private val shared_data = SHARED_DATA
-    private var checklist:MutableMap<String, Boolean> = shared_data.data.checklist
-    private val ingredient_dict = shared_data.data.ingredients_dict
+    private var checklist:MutableMap<String, Boolean> = USER_DATA.data.checklist
+    private val ingredient_dict = USER_DATA.data.ingredients_dict
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -26,7 +25,7 @@ class SettingActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.settingRevertBnt.setOnClickListener{
             val gson = Gson()
-            val jsonString = gson.toJson(shared_data.data)
+            val jsonString = gson.toJson(USER_DATA.data)
             val file = File(filesDir,"user_data.json")
             file.writeText(jsonString)
             finish()

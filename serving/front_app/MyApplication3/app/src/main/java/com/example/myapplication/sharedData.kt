@@ -2,7 +2,6 @@ package com.example.myapplication
 
 import android.graphics.Bitmap
 import android.media.Image
-import androidx.camera.core.ImageProxy
 import java.nio.ByteBuffer
 
 
@@ -11,6 +10,7 @@ data class JSONDATA(val class_dict: HashMap<String,String>, val ingredients_dict
 object SHARED_DATA {
     var bitmap: Bitmap? = null
     var image_byte: ByteArray? = null
-
-    lateinit var data: JSONDATA
+}
+object USER_DATA {
+    lateinit var data:JSONDATA
 }
