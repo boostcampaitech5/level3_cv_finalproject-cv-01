@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream
 import java.lang.Integer.max
 import java.lang.Integer.min
 
+val resize_len = 244
 
 class CameraActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCameraBinding
@@ -144,8 +145,8 @@ class CameraActivity : AppCompatActivity() {
                 var bitmap:Bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 var height= bitmap.height
                 var width = bitmap.width
-                if(min(height,width)>256){
-                    val pivot = min(height,width)/256.0
+                if(min(height,width)> resize_len){
+                    val pivot = min(height,width)/ resize_len.toFloat()
                     height = height.div(pivot).toInt()
                     width = width.div(pivot).toInt()
                 }
