@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -17,6 +18,8 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.google.gson.Gson
@@ -49,6 +52,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var retrofit:Retrofit
     private lateinit var service: RetrofitService
     private val REQUEST_IMAGE_CAPTURE = 2
+    private lateinit var uri:Uri
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,6 +87,8 @@ class MainActivity : AppCompatActivity() {
 
                 SHARED_DATA.bitmap = ImageDecoder.decodeBitmap(ImageDecoder
                     .createSource(application.contentResolver,crop_result.uri))
+
+                Log.d("test","${SHARED_DATA!!.bitmap!!.height}")
                 val out_stream = ByteArrayOutputStream()
                 SHARED_DATA.bitmap!!.compress(Bitmap.CompressFormat.JPEG,100,out_stream)
                 SHARED_DATA.image_byte = out_stream.toByteArray()
@@ -93,8 +99,13 @@ class MainActivity : AppCompatActivity() {
         val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 val capture_data: Intent? = result.data
-                val imageBitmap = capture_data?.extras?.get("data") as Bitmap
-                val uri = saveBitmapToCacheUri(this,imageBitmap)
+//                val imageBitmap = capture_data?.extras?.get("data") as Bitmap
+
+//                Log.d("test","${imageBitmap.height}")
+                Log.d("test","${uri}")
+//                val uri = saveBitmapToCacheUri(this,imageBitmap)
+//                binding.cameraImgView.setImageURI(uri)
+//                Log.d("test","Uri:${uri}")
                 val crop_activity = CropImage.activity(uri)
                     .setGuidelines(CropImageView.Guidelines.ON)
                     .setAspectRatio(1,1)
@@ -103,11 +114,12 @@ class MainActivity : AppCompatActivity() {
                 cropLauncher.launch(crop_intent)
             }
         }
+
         val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 val capture_data: Intent? = result.data
-                val uri = capture_data?.data
-                val crop_activity = CropImage.activity(uri)
+                val gallery_uri = capture_data?.data
+                val crop_activity = CropImage.activity(gallery_uri)
                     .setGuidelines(CropImageView.Guidelines.ON)
                     .setAspectRatio(1,1)
                 val crop_intent = crop_activity.getIntent(this)
@@ -118,11 +130,16 @@ class MainActivity : AppCompatActivity() {
         //카메라 버튼 및 설정
         binding.cameraImgView.setImageBitmap(SHARED_DATA.bitmap)
 
-
+        uri = FileProvider.getUriForFile(this,
+            "${applicationContext.packageName}.fileprovider",
+            File(this.cacheDir,"temp.jpg"))
         binding.camera.setOnClickListener {
 
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            cameraLauncher.launch(intent)
+                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+                intent.putExtra(MediaStore.EXTRA_OUTPUT,uri)
+                cameraLauncher.launch(intent)
+
         }
 
         //갤러리 설정
