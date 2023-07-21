@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         //권한 획득
-        requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),9)
+//        requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),9)
         requestPermissions(arrayOf(Manifest.permission.CAMERA),PERM_CAMERA)
 
 
