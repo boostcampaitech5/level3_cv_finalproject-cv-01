@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
 
                 SHARED_DATA.bitmap = ImageDecoder.decodeBitmap(ImageDecoder
                     .createSource(application.contentResolver,crop_result.uri))
-
+                SHARED_DATA.bitmap = Bitmap.createScaledBitmap(SHARED_DATA.bitmap!!,224,224,true)
                 Log.d("test","${SHARED_DATA!!.bitmap!!.height}")
                 val out_stream = ByteArrayOutputStream()
                 SHARED_DATA.bitmap!!.compress(Bitmap.CompressFormat.JPEG,100,out_stream)
