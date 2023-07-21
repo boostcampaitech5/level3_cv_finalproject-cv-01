@@ -2,28 +2,38 @@ package com.example.myapplication
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.google.gson.Gson
+import com.theartofdev.edmodo.cropper.CropImage
+import com.theartofdev.edmodo.cropper.CropImageActivity
+import com.theartofdev.edmodo.cropper.CropImageView
+import com.theartofdev.edmodo.cropper.CropImageView.CropResult
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
-import com.example.myapplication.serverData
-import com.example.myapplication.clientData
 import okhttp3.OkHttpClient
 import java.io.ByteArrayOutputStream
+import java.io.FileOutputStream
+import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 
@@ -31,7 +41,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var info_frag: ResultListDialog
-    private val sharedData = SHARED_DATA
     private lateinit var bitmap: Bitmap
     val PERM_STORAGE = 9
     val PERM_CAMERA = 10
@@ -40,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var retrofit:Retrofit
     private lateinit var service: RetrofitService
     private val REQUEST_IMAGE_CAPTURE = 2
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -47,11 +57,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         //권한 획득
-//        requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),9)
+        requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),9)
         requestPermissions(arrayOf(Manifest.permission.CAMERA),PERM_CAMERA)
 
-
-//        info_frag.show(supportFragmentManager,"info")
 
 
 
@@ -68,29 +76,62 @@ class MainActivity : AppCompatActivity() {
         val actionBar = supportActionBar
         setSupportActionBar(binding.mainToolbar)
 
-        //카메라 버튼 및 설정
-        binding.cameraImgView.setImageBitmap(sharedData.bitmap)
-        val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
 
-            result -> if (result.resultCode == RESULT_OK){
-            val data = result.data
-            Log.d("test",data!!.getStringExtra("from_activity").toString())
-            when(data!!.getStringExtra("from_activity")){
-                    "camera"->{
-                        if (data!!.getBooleanExtra("success",false))
-                            binding.cameraImgView.setImageBitmap(sharedData.bitmap)
-//                        Log.d("test","setImage:"+sharedData.image.toString())
-                        //send버튼 활성화
-                            binding.connectServer.isEnabled = true
-                    }
-                }
+        val cropLauncher =registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val crop_result = CropImage.getActivityResult(result.data)
+
+                SHARED_DATA.bitmap = ImageDecoder.decodeBitmap(ImageDecoder
+                    .createSource(application.contentResolver,crop_result.uri))
+                val out_stream = ByteArrayOutputStream()
+                SHARED_DATA.bitmap!!.compress(Bitmap.CompressFormat.JPEG,100,out_stream)
+                SHARED_DATA.image_byte = out_stream.toByteArray()
+                binding.cameraImgView.setImageBitmap(SHARED_DATA.bitmap)
+                binding.connectServer.isEnabled = true
             }
         }
-        binding.camera.setOnClickListener {
-            val intent = Intent(this, CameraActivity::class.java)
-            cameraLauncher.launch(intent)
+        val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val capture_data: Intent? = result.data
+                val imageBitmap = capture_data?.extras?.get("data") as Bitmap
+                val uri = saveBitmapToCacheUri(this,imageBitmap)
+                val crop_activity = CropImage.activity(uri)
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .setAspectRatio(1,1)
 
+                val crop_intent = crop_activity.getIntent(this)
+                cropLauncher.launch(crop_intent)
+            }
         }
+        val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val capture_data: Intent? = result.data
+                val uri = capture_data?.data
+                val crop_activity = CropImage.activity(uri)
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .setAspectRatio(1,1)
+                val crop_intent = crop_activity.getIntent(this)
+                cropLauncher.launch(crop_intent)
+            }
+        }
+
+        //카메라 버튼 및 설정
+        binding.cameraImgView.setImageBitmap(SHARED_DATA.bitmap)
+
+
+        binding.camera.setOnClickListener {
+
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            cameraLauncher.launch(intent)
+        }
+
+        //갤러리 설정
+        binding.galleryBtn.setOnClickListener{
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            galleryLauncher.launch(intent)
+        }
+
+
         //http 통신 설정
         Log.d("test",url_string)
         retrofit = Retrofit.Builder()
@@ -104,7 +145,7 @@ class MainActivity : AppCompatActivity() {
         // 서버 접속 버튼
         binding.connectServer.setOnClickListener{
 
-            Log.d("test","serverconnect_listener")
+            Log.d("test","${SHARED_DATA.bitmap!!.height},${SHARED_DATA.bitmap!!.width}")
             binding.connectServer.isEnabled = false
             connectServer()
         }
@@ -115,6 +156,7 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_main,menu)
         return true
     }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         Log.d("test", "onOptionsItemSelected - item ID: ${item.itemId}")
         return when (item.itemId) {
@@ -142,8 +184,8 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        })
 
-        val data:clientData = clientData(sharedData.image_byte!!)
-
+        val data:clientData = clientData(SHARED_DATA.image_byte!!)
+//        Log.d("test","${data}")
         service.getResult(data).enqueue(object : Callback<serverData> {
             override fun onResponse(call: Call<serverData>, response: Response<serverData>) {
                 Log.d("test","return : ${response.toString()}")
@@ -155,11 +197,19 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
-    fun pushUpInfo(){
-
-    }
-    fun pushDownInfo(){
-
+    fun saveBitmapToCacheUri(context: Context, bitmap: Bitmap): Uri? {
+        val cache_dir = context.cacheDir
+        val cache_file = File(cache_dir,"temp.jpg")
+        try {
+            val outStream = FileOutputStream(cache_file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream)
+            outStream.flush()
+            outStream.close()
+        }catch (exc:Exception){
+            Log.d("test","${exc}")
+            return null
+        }
+        return Uri.fromFile(cache_file)
     }
     fun dataParsing(){
         //res.raw.data는 읽기 전용이기 떄문에 내부저장소에 파일 저장하는 형식으로 교체
@@ -190,7 +240,7 @@ class MainActivity : AppCompatActivity() {
 
        // var data = gson.fromJson(jsonString, JSONDATA::class.java)
 
-        sharedData.data = data.copy()
+        USER_DATA.data = data.copy()
         url_string = "http://"+data.IP +":"+ data.PORT.toString()
 
 //        Log.d("test",data.class_dict.toString())
