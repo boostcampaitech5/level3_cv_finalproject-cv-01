@@ -84,7 +84,7 @@ async def upload(file: dict):
     return result
 
 if __name__ == '__main__':
-    model = torch.load('./pthfile/Tresnet_m_ml_decoder_recipy_best.pth').cuda()
+    model = torch.load('./pthfile/Tresnet_m_ml_decoder_recipy_final_latest.pth').cuda()
     model.eval()
     with open('./order/order.json') as file:
         classes = json.load(file)
