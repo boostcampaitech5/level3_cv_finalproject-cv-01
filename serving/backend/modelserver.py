@@ -12,6 +12,7 @@ import torch.nn.functional as F
 
 app = FastAPI()
 
+#모델 출력 -> {'result' : [{'class' : 음식명, 'recipe' : [재료], 'valid' : True or False} x 3]}
 def output2dict(output):
     class_threshold = 0
     allergy_threshold = 0.5
