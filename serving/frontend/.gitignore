@@ -1,0 +1,6 @@
+build
+dist
+client.exe.lnk
+client.spec
+image.png
+__pycache__
