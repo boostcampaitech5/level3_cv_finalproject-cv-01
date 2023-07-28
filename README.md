@@ -15,3 +15,7 @@
 [frontend](https://github.com/boostcampaitech5/level3_cv_finalproject-cv-01/tree/dev/serving/frontend)
 
 [backend](https://github.com/boostcampaitech5/level3_cv_finalproject-cv-01/tree/dev/serving/backend)
+
+## APK 다운로드 링크
+[github](./serving/front_app/app-demo.apk)   
+[google drive](https://drive.google.com/file/d/1Cpn8kdZOLg_VSNX20EmfaJOH53yVrKcS/view?usp=drive_link)   
