@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.3",
   "checklist": {
     "egg": false,
     "beef": false,
@@ -133,6 +133,6 @@
     "waffle": "와플",
     "wolnam_ssam": "월남쌈"
   },
-  "IP": "118.67.132.167",
-  "PORT": 30012
+  "IP": "101.101.208.43",
+  "PORT": 30010
 }
