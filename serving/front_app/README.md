@@ -6,9 +6,13 @@
 ## 디버깅용 test server
     testserver_for_android.py
 
+## APK 다운로드 링크
+[demo_apk](./app-demo.apk)   
+[google_drive](https://drive.google.com/file/d/1Cpn8kdZOLg_VSNX20EmfaJOH53yVrKcS/view?usp=drive_link)   
+
 ## 사용 라이브러리
     카메라 및 갤러리 : MediaStore
-    이미지 crop : Image Cropper [github](https://github.com/ArthurHub/Android-Image-Cropper)
+    이미지 crop : Image Cropper ![github](https://github.com/ArthurHub/Android-Image-Cropper)
     서버 통신 : retrofit2
 ## Directory
 front_app  
