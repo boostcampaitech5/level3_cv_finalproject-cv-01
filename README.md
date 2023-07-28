@@ -1,48 +1,16 @@
+## 프로젝트 소개
+해당 프로젝트는 음식 사진을 통해 음식의 식재료중 알러지를 유발할 수 있는 식재료를 검출하여 알려주는 어플리케이션을 제작하는 프로젝트입니다.
 
-### 데이터 셋
+현대인의 100명중 5~6명은 음식물 알러지가 있다고 합니다.
 
-- [셀렉트스타 음식 데이터](https://open.selectstar.ai/ko/?page_id=5976)
-    - 1024 X 1024 픽셀 이상의 고해상도 이미지
-    - 100개의 음식 클래스 당 1000개의 사진으로 구성
-    - 계층 구조가 정의된 음식 재료 레이블링 (json)
-    - 해당 데이터 셋을 가공해 112종류의 재료 데이터를 17개의 알레르기 데이터로 변환
+프로젝트에서 제작한 어플리케이션을 이용하면 처음 접하는 음식을 통해 알러지 유발 식재료가 있는지 간단하게 어플을 통해 확인할 수 있습니다.
 
-93개의 음식 클래스와 17개 종류의 알레르기 유발 재료 클래스
+## 각 파트의 안내
+[data](https://github.com/boostcampaitech5/level3_cv_finalproject-cv-01/tree/dev/data)
 
-**데이터 폴더 구조**
-  ```
-    data
-    │  data.csv
-    │  
-    ├─image
-    │  ├─baek_sook
-    │  │      baek_sook_0001.jpg
-    │  │      baek_sook_0002.jpg
-    │  │      ...
-    │  │
-    │  ├─baguette
-    │  ├─banh_mi
-    │  ...
-    │  ├─udon
-    │  ├─waffle
-    │  └─wolnam_ssam
-    │
-    └─json
-        ├─baek_sook
-    		│      1000_korea_baek_sook.json
-        │      1001_korea_baek_sook.json
-        │      ...
-        │
-    		├─baguette
-        ├─banh_mi
-        ...
-        ├─udon
-        ├─waffle
-        └─wolnam_ssam
-  ```
-
-## 각 파트의 사용법
 [model](https://github.com/boostcampaitech5/level3_cv_finalproject-cv-01/tree/dev/model)
+
+[front_app](https://github.com/boostcampaitech5/level3_cv_finalproject-cv-01/tree/dev/serving/front_app)
 
 [frontend](https://github.com/boostcampaitech5/level3_cv_finalproject-cv-01/tree/dev/serving/frontend)
 
