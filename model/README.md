@@ -40,6 +40,7 @@ Tresnet은 Resnet50을 변형하여 제작된 모델이며 메모리의 효율�
 3. In-Place Activated Batch Normalization
 4. Optimized SE(Squeeze-and-Excitation)
 5. Anti-Aliasing
+![Tresnet](https://github.com/boostcampaitech5/level3_cv_finalproject-cv-01/assets/74482282/d1de2801-eb5f-4242-bb4a-d6ebd3b0b872)
 
 ### ML_decoder
 기존 Global Average Pooling은 여러 객체가 존재하는 Multi-Label의 경우 적합하지 않기 때문에 Attention을 이용하여 더 좋은 결과를 낼 수 있었다.
@@ -70,3 +71,4 @@ Focal Loss와 식이 같지만, 다르다.
 항상 $r_{+}< r_{-}$로 설정하여 Positive 데이터의 decay weight를 다르게 학습하여 어려운 Positive 데이터를 잘 학습될 수 있도록 하는 것이다.
 
 하지만, 여기서 Imbalance가 매우 큰 상황을 가정한다면 Negative 데이터를 학습이 안되는 경우가 있기 때문에 이를 보완하기위해 hard thresholding를 추가한다.
+![ASL_Loss](https://github.com/boostcampaitech5/level3_cv_finalproject-cv-01/assets/74482282/907a560a-d05d-4208-aa9d-3145494312e2)
