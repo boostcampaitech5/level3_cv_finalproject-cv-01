@@ -51,7 +51,6 @@ ML-Decoder는 Self-Attention을 제거함으로써 디코더가 입력 쿼리 �
 또한, Group Decoding을 이용하여 효율적인 메모리 사용, 연산 감소 효과를 얻을수 있으며, 고정된 쿼리를 이용하면서 ZSL(Zero-Shot Learning)을 가능하도록 했다.
 
 ### ASL Loss
-# ASL Loss
 
 기존 Class Imbalance를 컨트롤하는 Loss Function으로는 Focal Loss가 있다.
 
