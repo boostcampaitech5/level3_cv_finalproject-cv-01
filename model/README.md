@@ -40,7 +40,7 @@ Tresnet은 Resnet50을 변형하여 제작된 모델이며 메모리의 효율�
 3. In-Place Activated Batch Normalization
 4. Optimized SE(Squeeze-and-Excitation)
 5. Anti-Aliasing
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/5d19481e-89ee-4498-b63b-2d855f43687f/Untitled.png)
+
 ### ML_decoder
 기존 Global Average Pooling은 여러 객체가 존재하는 Multi-Label의 경우 적합하지 않기 때문에 Attention을 이용하여 더 좋은 결과를 낼 수 있었다.
 
@@ -57,8 +57,6 @@ ML-Decoder는 Self-Attention을 제거함으로써 디코더가 입력 쿼리 �
 
 Focal Loss는 Cross Entropy Loss를 베이스로 한 Loss function으로 $\gamma$를 조절하면서 더욱 극적인 가중치를 줄 수 있다.($\gamma$=0이면 Cross Entropy Loss)
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/af4d4a17-53a8-4ca8-88c7-1d04e946e23d/Untitled.png)
-
 즉, Focal Loss는 학습하기 어려운 데이터를 가중치를 다르게 주면서 Class Imbalance를 해결하는 방법이다.
 
 하지만, 어려운 데이터를 가중치에 더 큰 가중치를 주게 되고, 상대적으로 학습하기 쉬운 데이터의 Loss가 크다는 단점이 있다.
@@ -67,11 +65,9 @@ Focal Loss는 Cross Entropy Loss를 베이스로 한 Loss function으로 $\gamma
 
 ASL Loss의 경우 Positive, Negative 데이터를 다르게 학습해야한다고 이야기한다.
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/4f2fe0c0-e69d-40b2-b176-586a48aa3ac1/Untitled.png)
 
 Focal Loss와 식이 같지만, 다르다.
 
 항상 $r_{+}< r_{-}$로 설정하여 Positive 데이터의 decay weight를 다르게 학습하여 어려운 Positive 데이터를 잘 학습될 수 있도록 하는 것이다.
 
 하지만, 여기서 Imbalance가 매우 큰 상황을 가정한다면 Negative 데이터를 학습이 안되는 경우가 있기 때문에 이를 보완하기위해 hard thresholding를 추가한다.
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/c23d0e0b-a210-483e-8d6a-8fba585d44fc/Untitled.png)
