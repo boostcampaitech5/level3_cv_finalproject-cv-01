@@ -66,27 +66,26 @@ def main(args):
 
     model_module = getattr(import_module("models"), args.model_name)
     model = model_module(num_classes=110)
+    # model = torch.load(
+    #     "/opt/ml/level3_cv_finalproject-cv-01/model/save/Tresnet_m_ml_decoder_add_data_recipy_latest.pth"
+    # )
+    # model = resnet50d(pretrained=False, num_classes=110).cuda()
 
-    # criterion = [
-    #     CLSLoss(num_classes=93, weight=[1, 0.1], smoothing=0.1),
-    #     RCPLoss(num_classes=17, weight=[1, 0.2], smoothing=0.1, gamma=2.0),
-    # ]
-    criterion = AsymmetricLoss(
-        gamma_neg=4,
-        gamma_pos=0,
-        clip=0.05,
-        eps=1e-8,
-        disable_torch_grad_focal_loss=True,
-    )
+    criterion = nn.BCEWithLogitsLoss()
+    # criterion = AsymmetricLoss(
+    #     gamma_neg=4,
+    #     gamma_pos=0,
+    #     clip=0.05,
+    #     eps=1e-8,
+    #     disable_torch_grad_focal_loss=True,
+    # )
     optimizer = optim.AdamW(
         params=model.parameters(), lr=args.lr, weight_decay=args.weight_decay
     )
-    scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=args.eta_min)
+    # scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=args.eta_min)
 
     # train(model, optimizer, criterion, scheduler, train_loader, valid_loader, args)
-    combine_train(
-        model, optimizer, criterion, scheduler, train_loader, valid_loader, args
-    )
+    combine_train(model, optimizer, criterion, train_loader, valid_loader, args)
     wandb.finish()
 
 

@@ -125,7 +125,8 @@ def train(model, optimizer, criterion, scheduler, train_loader, valid_loader, ar
         )
 
         wandb.log({"train/Epoch": epoch + 1})
-        scheduler.step()
+        if scheduler == None:
+            scheduler.step()
 
         loss, score = validation(model, criterion, valid_loader)
 
@@ -154,7 +155,7 @@ def train(model, optimizer, criterion, scheduler, train_loader, valid_loader, ar
     print("Finish Train!!!")
 
 
-def combine_validation(model, criterion, valid_loader):
+def combine_validation(model, valid_loader):
     print("Start Validation...")
     model.eval()
     with torch.no_grad():
@@ -221,7 +222,7 @@ def combine_validation(model, criterion, valid_loader):
 
 
 def combine_train(
-    model, optimizer, criterion, scheduler, train_loader, valid_loader, args
+    model, optimizer, criterion, train_loader, valid_loader, args, scheduler=None
 ):
     print("Start Train...")
 
@@ -260,9 +261,10 @@ def combine_train(
         )
 
         wandb.log({"train/Epoch": epoch + 1})
-        scheduler.step()
+        if scheduler != None:
+            scheduler.step()
 
-        score = combine_validation(model, criterion, valid_loader)
+        score = combine_validation(model, valid_loader)
 
         print(
             f"Validation CLS Marco F1 Score : {score[0]}\tValidation RCP Marco F1 Score : {score[1]}\n"
